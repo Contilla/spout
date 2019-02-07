@@ -271,4 +271,14 @@ EOD;
         fwrite($worksheetFilePointer, '</worksheet>');
         fclose($worksheetFilePointer);
     }
+    
+    /**
+     * Calculates the excel representation of a datetime object
+     * 
+     * @param \DateTime $timestamp
+     * @return float
+     */
+    protected static function convert_date_time(\DateTimeInterface $timestamp) {
+        return \Box\Spout\Common\Helper\ExcelTimestampHelper::getExcelTimestamp($timestamp);
+    }
 }
