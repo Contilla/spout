@@ -70,6 +70,16 @@ class Style
 
     /** @var bool */
     private $hasSetBackgroundColor = false;
+    
+    /**
+     * @var NumberFormat format for numeric values of the cell
+     */
+    private $numberFormat = null;
+
+    /**
+     * @var boolean
+     */
+    private $hasSetNumberFormat = false;
 
     /**
      * @return int|null
@@ -382,5 +392,27 @@ class Style
     public function shouldApplyBackgroundColor()
     {
         return $this->hasSetBackgroundColor;
+    }
+    
+    /**
+     * Set the number format for the style
+     * 
+     * @param \Box\Spout\Common\Entity\Style\NumberFormat $numberFormat
+     * @return $this
+     */
+    public function setNumberFormat(NumberFormat $numberFormat) {
+        $this->numberFormat = $numberFormat;
+        $this->hasSetNumberFormat = true;
+
+        return $this;
+    }
+    
+    /**
+     * Test if the style has a number format defined
+     * 
+     * @return bool
+     */
+    public function shouldApplyNumberFormat() {
+        return $this->hasSetNumberFormat;
     }
 }
