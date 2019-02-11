@@ -218,6 +218,8 @@ EOD;
             $cellXML .= ' t="b"><v>' . (int) ($cell->getValue()) . '</v></c>';
         } elseif ($cell->isNumeric()) {
             $cellXML .= '><v>' . $cell->getValue() . '</v></c>';
+        } elseif ($cell->isDate()) {
+            $cellXML .= '><v>'.self::convert_date_time($cell->getValue()).'</v></c>';
         } elseif ($cell->isEmpty()) {
             if ($this->styleManager->shouldApplyStyleOnEmptyCell($styleId)) {
                 $cellXML .= '/>';
