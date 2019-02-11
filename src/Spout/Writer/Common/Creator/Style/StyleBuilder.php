@@ -147,6 +147,18 @@ class StyleBuilder
 
         return $this;
     }
+    
+    /**
+     * Set a number format
+     * 
+     * @param \Box\Spout\Common\Entity\Style\NumberFormat $numberFormat
+     * @return $this
+     */
+    public function setNumberFormat(\Box\Spout\Common\Entity\Style\NumberFormat $numberFormat) {
+        $this->style->setNumberFormat($numberFormat);
+        
+        return $this;
+    }
 
     /**
      * Returns the configured style. The style is cached and can be reused.
