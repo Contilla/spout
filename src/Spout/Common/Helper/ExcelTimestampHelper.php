@@ -169,7 +169,7 @@ class ExcelTimestampHelper {
      * @return float MS Excel serialized date/time value
      */
     public static function getExcelTimestamp(DateTimeInterface $dateValue) {
-        return self::formattedPHPToExcel(
+        return self::encodeExcelTimestamp(
                         $dateValue->format('Y'),
                         $dateValue->format('m'),
                         $dateValue->format('d'),
