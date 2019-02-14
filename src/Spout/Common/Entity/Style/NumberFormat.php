@@ -23,19 +23,15 @@ namespace Box\Spout\Common\Entity\Style;
  */
 class NumberFormat {
 
-     // Pre-defined formats
+    // Pre-defined formats
     const FORMAT_GENERAL = 'General';
-
     const FORMAT_TEXT = '@';
-
     const FORMAT_NUMBER = '0';
     const FORMAT_NUMBER_00 = '0.00';
     const FORMAT_NUMBER_COMMA_SEPARATED1 = '#,##0.00';
     const FORMAT_NUMBER_COMMA_SEPARATED2 = '#,##0.00_-';
-
     const FORMAT_PERCENTAGE = '0%';
     const FORMAT_PERCENTAGE_00 = '0.00%';
-
     const FORMAT_DATE_YYYYMMDD2 = 'yyyy-mm-dd';
     const FORMAT_DATE_YYYYMMDD = 'yy-mm-dd';
     const FORMAT_DATE_DDMMYYYY = 'dd/mm/yy';
@@ -58,7 +54,6 @@ class NumberFormat {
     const FORMAT_DATE_TIME7 = 'i:s.S';
     const FORMAT_DATE_TIME8 = 'h:mm:ss;@';
     const FORMAT_DATE_YYYYMMDDSLASH = 'yy/mm/dd;@';
-
     const FORMAT_CURRENCY_USD_SIMPLE = '"$"#,##0.00_-';
     const FORMAT_CURRENCY_USD = '$#,##0_-';
     const FORMAT_CURRENCY_EUR_SIMPLE = '#,##0.00_-"€"';
@@ -92,7 +87,6 @@ class NumberFormat {
      */
     protected $builtInFormatCode = 0;
 
-
     /**
      * Set the format for anumeric value
      * 
@@ -108,30 +102,29 @@ class NumberFormat {
             }
         } elseif (null === $formatCode) {
             // ok
-            $formatCode=self::FORMAT_GENERAL;
+            $formatCode = self::FORMAT_GENERAL;
         } else {
             throw new \Exception('Format definition must be a string or NULL');
         }
 
         $this->$formatCode = $formatCode;
         $this->builtInFormatCode = self::builtInFormatCodeIndex($formatCode);
-        
+
         return $this;
     }
-    
+
     public function getFormatCode() {
         return $this->formatCode;
     }
-    
+
     public function getBuildInFormatCode() {
         return $this->builtInFormatCode;
     }
-    
+
     /**
      * Definition of Excel-build-in format codes
      */
-    private static function fillBuiltInFormatCodes()
-    {
+    private static function fillBuiltInFormatCodes() {
         //  [MS-OI29500: Microsoft Office Implementation Information for ISO/IEC-29500 Standard Compliance]
         //  18.8.30. numFmt (Number Format)
         //
@@ -153,7 +146,6 @@ class NumberFormat {
         //      40: "#,##0.00_);[Red](#,##0.00)"
         //      47: "mm:ss.0"
         //      KOR fmt 55: "yyyy/mm/dd"
-
         // Built-in format codes
         if (self::$builtInFormats === null) {
             self::$builtInFormats = [];
@@ -213,15 +205,14 @@ class NumberFormat {
             self::$flippedBuiltInFormats = array_flip(self::$builtInFormats);
         }
     }
-    
+
     /**
      * Get the format code for a given build-in format index
      * 
      * @param int $pIndex
      * @return string
      */
-    public static function builtInFormatCode($pIndex)
-    {
+    public static function builtInFormatCode($pIndex) {
         // Clean parameter
         $pIndex = (int) $pIndex;
 
@@ -235,15 +226,14 @@ class NumberFormat {
 
         return '';
     }
-    
+
     /**
      * Get id for a build-in format for the given format code if available
      * 
      * @param string $formatCode
      * @return int|boolean
      */
-    public static function builtInFormatCodeIndex($formatCode)
-    {
+    public static function builtInFormatCodeIndex($formatCode) {
         // Ensure built-in format codes are available
         self::fillBuiltInFormatCodes();
 
