@@ -51,6 +51,7 @@ EOD;
         $content .= $this->getFontsSectionContent();
         $content .= $this->getFillsSectionContent();
         $content .= $this->getBordersSectionContent();
+        $content .= $this->getNumberFormatsSectionContent();
         $content .= $this->getCellStyleXfsSectionContent();
         $content .= $this->getCellXfsSectionContent();
         $content .= $this->getCellStylesSectionContent();
@@ -176,6 +177,39 @@ EOD;
 
         return $content;
     }
+    
+    /**
+     * Returns the content of the "<numFmts>" section.
+     *
+     * @return string
+     */
+    protected function getNumberFormatsSectionContent() {
+        $registeredFormats = $this->styleRegistry->getRegisteredNumberFormats();
+
+        // There is one default border with index 0
+        //$formatsCount = count($registeredFormats) + 1;
+        $formatsCount = count($registeredFormats);
+
+        $content = '';
+        if ($formatsCount !== 0) {
+
+            $content .= '<numFmts count="' . $formatsCount . '">';
+
+            // Default border starting at index 0
+            //$content .= '<numFmt><left/><right/><top/><bottom/></border>';
+
+            foreach ($registeredFormats as $styleId) {
+                /** @var \Box\Spout\Common\Entity\Style\Style $style */
+                $style = $this->styleRegistry->getStyleFromStyleId($styleId);
+                $numberFormat = $style->getNumberFormat();
+                $content .= sprintf('<numFmt numFmtId="%s" formatCode="%s"/>', $this->getNumberFormatIdForStyleId($styleId), htmlentities($numberFormat->getFormatCode()));
+            }
+
+            $content .= '</numFmts>';
+        }
+
+        return $content;
+    }
 
     /**
      * Returns the content of the "<cellStyleXfs>" section.
@@ -206,8 +240,9 @@ EOD;
             $styleId = $style->getId();
             $fillId = $this->getFillIdForStyleId($styleId);
             $borderId = $this->getBorderIdForStyleId($styleId);
+            $numberFormatId = $this->getNumberFormatIdForStyleId($styleId);
 
-            $content .= '<xf numFmtId="0" fontId="' . $styleId . '" fillId="' . $fillId . '" borderId="' . $borderId . '" xfId="0"';
+            $content .= '<xf numFmtId="' . $numberFormatId . '" fontId="' . $styleId . '" fillId="' . $fillId . '" borderId="' . $borderId . '" xfId="0"';
 
             if ($style->shouldApplyFont()) {
                 $content .= ' applyFont="1"';
@@ -260,6 +295,22 @@ EOD;
 
         return $isDefaultStyle ? 0 : ($this->styleRegistry->getBorderIdForStyleId($styleId) ?: 0);
     }
+    
+    /**
+     * Returns the number format ID associated to the given style ID.
+     * For the default style, we don't add a number format.
+     *
+     * @param int $styleId
+     * @return int
+     */
+    private function getNumberFormatIdForStyleId($styleId) {
+        // For the default style (ID = 0), we don't want to override the border.
+        // Otherwise all cells of the spreadsheet will have a border.
+        $isDefaultStyle = ($styleId === 0);
+
+        return $isDefaultStyle ? 0 : ($this->styleRegistry->getNumberFormatIdForStyleId($styleId) ?: 0);
+    }
+
 
     /**
      * Returns the content of the "<cellStyles>" section.

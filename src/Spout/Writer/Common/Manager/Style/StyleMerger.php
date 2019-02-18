@@ -29,6 +29,7 @@ class StyleMerger
         $this->mergeFontStyles($mergedStyle, $style, $baseStyle);
         $this->mergeOtherFontProperties($mergedStyle, $style, $baseStyle);
         $this->mergeCellProperties($mergedStyle, $style, $baseStyle);
+        $this->mergeNumberFormatProperties($mergedStyle, $style, $baseStyle);
 
         return $mergedStyle;
     }
@@ -52,6 +53,20 @@ class StyleMerger
         }
         if (!$style->hasSetFontStrikethrough() && $baseStyle->isFontStrikethrough()) {
             $styleToUpdate->setFontStrikethrough();
+        }
+    }
+    
+    /**
+     * Update the number format style property of the cell
+     * 
+     * @param Style $styleToUpdate Style to update
+     * @param Style $style
+     * @param Style $baseStyle
+     */
+    private function mergeNumberFormatProperties(Style $styleToUpdate, Style $style, Style $baseStyle)
+    {
+        if (!$style->hasSetNumberFormat() && $baseStyle->shouldApplyNumberFormat()) {
+            $styleToUpdate->setNumberFormat($baseStyle->getNumberFormat());
         }
     }
 

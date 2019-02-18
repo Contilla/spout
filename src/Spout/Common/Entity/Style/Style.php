@@ -82,6 +82,11 @@ class Style
     private $hasSetNumberFormat = false;
 
     /**
+     * @var boolean
+     */
+    private $shouldApplyNumberFormat = false;
+
+    /**
      * @return int|null
      */
     public function getId()
@@ -389,11 +394,10 @@ class Style
     /**
      * @return bool Whether the background color should be applied
      */
-    public function shouldApplyBackgroundColor()
-    {
+    public function shouldApplyBackgroundColor() {
         return $this->hasSetBackgroundColor;
     }
-    
+
     /**
      * Set the number format for the style
      * 
@@ -403,16 +407,36 @@ class Style
     public function setNumberFormat(NumberFormat $numberFormat) {
         $this->numberFormat = $numberFormat;
         $this->hasSetNumberFormat = true;
+        $this->shouldApplyNumberFormat = $numberFormat->getBuildInFormatCode() !== NumberFormat::FORMAT_GENERAL;
 
         return $this;
     }
-    
+
+    /**
+     * Get the number format for the style
+     * 
+     * @return NumberFormat
+     */
+    public function getNumberFormat() {
+        return $this->numberFormat;
+    }
+
     /**
      * Test if the style has a number format defined
      * 
      * @return bool
      */
     public function shouldApplyNumberFormat() {
+        return $this->shouldApplyNumberFormat;
+    }
+
+    /**
+     * Test if the style has a number format defined
+     * 
+     * @return bool
+     */
+    public function hasSetNumberFormat() {
         return $this->hasSetNumberFormat;
     }
+
 }
