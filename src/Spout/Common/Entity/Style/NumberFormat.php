@@ -3,9 +3,9 @@
 /**
  * NumberFormat
  * 
- * Description of NumberFormat
+ * Format definition of a number
  *
- * @copyright (c) Expression year is undefined on line 7, column 21 in Templates/Scripting/PHPClass.php., Contilla GmbH
+ * @copyright (c) 2019, Contilla GmbH
  * @author Oliver Friedrich <friedrich@contilla.de>
  * @version 1.0, 01.02.2019
  */
@@ -15,9 +15,9 @@ namespace Box\Spout\Common\Entity\Style;
 /**
  * NumberFormat
  * 
- * Description of NumberFormat
+ * Format definition of a number
  *
- * @copyright (c) Expression year is undefined on line 21, column 21 in Templates/Scripting/PHPClass.php., Contilla GmbH
+ * @copyright (c) 2019, Contilla GmbH
  * @author Oliver Friedrich <friedrich@contilla.de>
  * @version 1.0, 01.02.2019
  */
@@ -86,6 +86,7 @@ class NumberFormat {
      * @var string
      */
     protected $builtInFormatCode = 0;
+    protected $formatTokens = null;
 
     /**
      * Set the format for anumeric value
@@ -107,7 +108,8 @@ class NumberFormat {
             throw new \Exception('Format definition must be a string or NULL');
         }
 
-        $this->$formatCode = $formatCode;
+        $this->formatTokens = null;
+        $this->formatCode = $formatCode;
         $this->builtInFormatCode = self::builtInFormatCodeIndex($formatCode);
 
         return $this;
@@ -243,6 +245,26 @@ class NumberFormat {
         }
 
         return false;
+    }
+
+    /**
+     * Parse a number format definition into tokens
+     * 
+     * @return array
+     */
+    public function getFormatTokens() {
+        if ($this->formatTokens = null) {
+            $tokens = [];
+            
+            $formatCode = $this->formatCode;
+            
+            // @todo implement token generation
+
+            $this->formatTokens = $tokens;
+        }
+
+        throw new \Exception('Not implemented');
+        return $this->formatTokens;
     }
 
 }
