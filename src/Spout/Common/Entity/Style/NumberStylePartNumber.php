@@ -222,12 +222,12 @@ class NumberStylePartNumber implements NumberStylePartInterface {
         if (preg_match($regexp, $formatPartStripped, $match)) {
             $minIntegerPlaces = strlen($match[3]);
             $maxIntegerPlaces = null; // unlimited
-            if (count($match[2]) !== 0) {
+            if (isset($match[2]) && is_string($match[2]) && strlen($match[2]) !== 0) {
                 if (!$usesGrouping) {
                     $maxIntegerPlaces = strlen($match[1]);
                 }
             }
-            $usesDecimalSeperator = strlen($match[5]) !== 0;
+            $usesDecimalSeperator = isset($match[5]) && strlen($match[5]) !== 0;
             if ($usesDecimalSeperator) {
                 $minDecimalPlaces = max(strlen($match[7]), 1);
                 $maxDecimalPlaces = max(strlen($match[6]), $minDecimalPlaces);
