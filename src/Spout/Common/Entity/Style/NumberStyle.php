@@ -12,6 +12,8 @@
 
 namespace Box\Spout\Common\Entity\Style;
 
+use Box\Spout\Common\Exception\NumberFormatException;
+
 /**
  * NumberFormatDeclaration
  * 
@@ -32,6 +34,11 @@ class NumberStyle {
      * @var NumberStylePartInterface[]
      */
     private $parts = [];
+    
+    /**
+     * @var NumberFormatCondition[] 
+     */
+    static $defaultConditions = null;
 
     public function __construct() {
         
@@ -88,7 +95,7 @@ class NumberStyle {
                     }
                 }
                 $format = $match[7]; // includes all but the condition and the color
-                $formatParts = $this->parseFormat($format);
+                $formatParts = self::parseFormat($format);
 
                 if ($numTokens !== 1) {
                     $mappedDeclaration = new NumberStyle();
@@ -109,7 +116,7 @@ class NumberStyle {
                 }
             }
         }
-        
+
         return $declaration;
     }
 
@@ -125,10 +132,10 @@ class NumberStyle {
         $expStringInQuotes = '/^(".*?"|\'.*?\')/';
 
         // regexp to get a number block
-        $expDigits = '^([\#0\.,]+)';
+        $expDigits = '/^([\#0\.,]+)/';
 
         // regexp to get format part that is not a number block and not surrounded by quotation marks
-        $expNoDigits = '^([^\#0\.,]+)';
+        $expNoDigits = '/^([^\#0\.,]+)/';
 
         $tests = [
             [
@@ -171,7 +178,7 @@ class NumberStyle {
             }
 
             if (!$found) {
-                throw new Exception('Unable to parse format string. No known token starting at first character');
+                throw new NumberFormatException(sprintf('Unable to parse format string. No known token starting at first character: "%s"', substr($format, 0, 5)));
             }
         }
 
@@ -181,7 +188,7 @@ class NumberStyle {
     /**
      * Add a form definition part for this styling
      * 
-     * @param \Box\Spout\Common\Entity\Style\NumberStylePartInterface $part
+     * @param NumberStylePartInterface $part
      * @return $this
      */
     public function addPart(NumberStylePartInterface $part) {
