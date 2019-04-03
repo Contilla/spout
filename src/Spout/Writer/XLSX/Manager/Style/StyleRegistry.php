@@ -177,7 +177,7 @@ class StyleRegistry extends \Box\Spout\Writer\Common\Manager\Style\StyleRegistry
 
     /**
      * @param int $styleId
-     * @return int|null Fill ID associated to the given style ID
+     * @return int|null NumberFormat ID associated to the given style ID
      */
     public function getNumberFormatIdForStyleId($styleId) {
         return (isset($this->styleIdToNumberFormatMappingTable[$styleId])) ? $this->styleIdToNumberFormatMappingTable[$styleId] : null;
@@ -199,7 +199,7 @@ class StyleRegistry extends \Box\Spout\Writer\Common\Manager\Style\StyleRegistry
         return $this->registeredBorders;
     }
     
-     /**
+    /**
      * @return array
      */
     public function getRegisteredNumberFormats()
