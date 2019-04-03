@@ -86,7 +86,8 @@ class NumberFormatCondition {
     }
 
     public static function getComparatorType($comparatorString) {
-        switch (trim($comparatorString)) {
+        $test = trim($comparatorString);
+        switch ($test) {
             case '<':
                 $type = self::COMPARE_LOWERTHAN;
                 break;
@@ -102,8 +103,11 @@ class NumberFormatCondition {
             case '>':
                 $type = self::COMPARE_GREATERTHAN;
                 break;
+            case '':
+                $type = null;
+                break;
             default:
-                throw new \Exception('Unknown comparator string');
+                throw new \Exception(sprintf('Unknown comparator string: "%s"', $test));
                 break;
         }
 
