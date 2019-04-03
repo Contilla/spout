@@ -3,9 +3,9 @@
 /**
  * NumberformatBuilder
  * 
- * Description of NumberformatBuilder
+ * Builder to create new number format definitions
  *
- * @copyright (c) Expression year is undefined on line 7, column 21 in Templates/Scripting/PHPClass.php., Contilla GmbH
+ * @copyright (c) 2019, Contilla GmbH
  * @author Oliver Friedrich <friedrich@contilla.de>
  * @version 1.0, 01.02.2019
  */
@@ -15,9 +15,9 @@ namespace Box\Spout\Writer\Common\Creator\Style;
 /**
  * NumberformatBuilder
  * 
- * Description of NumberformatBuilder
+ * Builder to create new number format definitions
  *
- * @copyright (c) Expression year is undefined on line 21, column 21 in Templates/Scripting/PHPClass.php., Contilla GmbH
+ * @copyright (c) 2019, Contilla GmbH
  * @author Oliver Friedrich <friedrich@contilla.de>
  * @version 1.0, 01.02.2019
  */
@@ -26,7 +26,7 @@ class NumberformatBuilder {
     /**
      * @var \Box\Spout\Common\Entity\Style\NumberFormat
      */
-    private $numberFormat=null;
+    protected $numberFormat=null;
     
     public function __construct()
     {
@@ -51,6 +51,10 @@ class NumberformatBuilder {
      * @return \Box\Spout\Common\Entity\Style\NumberFormat
      */
     public function build() {
+        return $this->numberFormat;
+    }
+    
+    public function getFormat() {
         return $this->numberFormat;
     }
 }
