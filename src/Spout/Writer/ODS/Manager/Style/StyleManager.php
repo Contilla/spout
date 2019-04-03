@@ -10,8 +10,8 @@ use Box\Spout\Writer\ODS\Helper\BorderHelper;
  * Class StyleManager
  * Manages styles to be applied to a cell
  */
-class StyleManager extends \Box\Spout\Writer\Common\Manager\Style\StyleManager
-{
+class StyleManager extends \Box\Spout\Writer\Common\Manager\Style\StyleManager {
+
     /** @var StyleRegistry */
     protected $styleRegistry;
 
@@ -21,8 +21,7 @@ class StyleManager extends \Box\Spout\Writer\Common\Manager\Style\StyleManager
      * @param int $numWorksheets Number of worksheets created
      * @return string
      */
-    public function getStylesXMLFileContent($numWorksheets)
-    {
+    public function getStylesXMLFileContent($numWorksheets) {
         $content = <<<'EOD'
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <office:document-styles office:version="1.2" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:msoxl="http://schemas.microsoft.com/office/excel/formula" xmlns:number="urn:oasis:names:tc:opendocument:xmlns:datastyle:1.0" xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0" xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -45,8 +44,7 @@ EOD;
      *
      * @return string
      */
-    protected function getFontFaceSectionContent()
-    {
+    protected function getFontFaceSectionContent() {
         $content = '<office:font-face-decls>';
         foreach ($this->styleRegistry->getUsedFonts() as $fontName) {
             $content .= '<style:font-face style:name="' . $fontName . '" svg:font-family="' . $fontName . '"/>';
@@ -56,20 +54,71 @@ EOD;
         return $content;
     }
 
+    protected function getDateFormat($format) {
+        
+    }
+
+    protected function getNumberFormat($format) {
+        
+    }
+
+    protected function getNumberFormatSectionContent($styleId, \Box\Spout\Common\Entity\Style\Style $style) {
+        $content = '';
+
+        $format = $style->getNumberFormat();
+        if ($format instanceof \Box\Spout\Common\Entity\Style\DateFormat) {
+            // decode date/time format string
+            $this->getDateFormat($format);
+        } else {
+            // decode number format string
+            $this->getNumberFormat($format);
+        }
+
+        return $content;
+    }
+
+    protected function getNumberFormatsSectionContent() {
+        $content = '';
+
+        // default
+        $content = <<<EOD
+                <number:number-style style:name="N0">
+                    <number:number number:min-integer-digits="1"/>
+                </number:number-style>
+EOD;
+
+        $registeredFormats = $this->styleRegistry->getRegisteredNumberFormats();
+
+        // There is one default border with index 0
+        //$formatsCount = count($registeredFormats) + 1;
+        $formatsCount = count($registeredFormats);
+
+        $content = '';
+        if ($formatsCount !== 0) {
+            foreach ($registeredFormats as $styleId) {
+                /** @var \Box\Spout\Common\Entity\Style\Style $style */
+                $style = $this->styleRegistry->getStyleFromStyleId($styleId);
+                $numberFormat = $style->getNumberFormat();
+
+                $content .= $this->getNumberFormatSectionContent($styleId, $style);
+            }
+        }
+
+        return $content;
+    }
+
     /**
      * Returns the content of the "<office:styles>" section, inside "styles.xml" file.
      *
      * @return string
      */
-    protected function getStylesSectionContent()
-    {
+    protected function getStylesSectionContent() {
         $defaultStyle = $this->getDefaultStyle();
 
         return <<<EOD
 <office:styles>
-    <number:number-style style:name="N0">
-        <number:number number:min-integer-digits="1"/>
-    </number:number-style>
+   {$this->getNumberFormatsSectionContent()} 
+   
     <style:style style:data-style-name="N0" style:family="table-cell" style:name="Default">
         <style:table-cell-properties fo:background-color="transparent" style:vertical-align="automatic"/>
         <style:text-properties fo:color="#{$defaultStyle->getFontColor()}"
@@ -86,8 +135,7 @@ EOD;
      * @param int $numWorksheets Number of worksheets created
      * @return string
      */
-    protected function getAutomaticStylesSectionContent($numWorksheets)
-    {
+    protected function getAutomaticStylesSectionContent($numWorksheets) {
         $content = '<office:automatic-styles>';
 
         for ($i = 1; $i <= $numWorksheets; $i++) {
@@ -111,8 +159,7 @@ EOD;
      * @param int $numWorksheets Number of worksheets created
      * @return string
      */
-    protected function getMasterStylesSectionContent($numWorksheets)
-    {
+    protected function getMasterStylesSectionContent($numWorksheets) {
         $content = '<office:master-styles>';
 
         for ($i = 1; $i <= $numWorksheets; $i++) {
@@ -136,8 +183,7 @@ EOD;
      *
      * @return string
      */
-    public function getContentXmlFontFaceSectionContent()
-    {
+    public function getContentXmlFontFaceSectionContent() {
         $content = '<office:font-face-decls>';
         foreach ($this->styleRegistry->getUsedFonts() as $fontName) {
             $content .= '<style:font-face style:name="' . $fontName . '" svg:font-family="' . $fontName . '"/>';
@@ -153,8 +199,7 @@ EOD;
      * @param Worksheet[] $worksheets
      * @return string
      */
-    public function getContentXmlAutomaticStylesSectionContent($worksheets)
-    {
+    public function getContentXmlAutomaticStylesSectionContent($worksheets) {
         $content = '<office:automatic-styles>';
 
         foreach ($this->styleRegistry->getRegisteredStyles() as $style) {
@@ -192,8 +237,7 @@ EOD;
      * @param \Box\Spout\Common\Entity\Style\Style $style
      * @return string
      */
-    protected function getStyleSectionContent($style)
-    {
+    protected function getStyleSectionContent($style) {
         $styleIndex = $style->getId() + 1; // 1-based
 
         $content = '<style:style style:data-style-name="N0" style:family="table-cell" style:name="ce' . $styleIndex . '" style:parent-style-name="Default">';
@@ -212,8 +256,7 @@ EOD;
      * @param \Box\Spout\Common\Entity\Style\Style $style
      * @return string
      */
-    private function getTextPropertiesSectionContent($style)
-    {
+    private function getTextPropertiesSectionContent($style) {
         $content = '';
 
         if ($style->shouldApplyFont()) {
@@ -229,8 +272,7 @@ EOD;
      * @param \Box\Spout\Common\Entity\Style\Style $style
      * @return string
      */
-    private function getFontSectionContent($style)
-    {
+    private function getFontSectionContent($style) {
         $defaultStyle = $this->getDefaultStyle();
 
         $content = '<style:text-properties';
@@ -274,8 +316,7 @@ EOD;
      * @param \Box\Spout\Common\Entity\Style\Style $style
      * @return string
      */
-    private function getTableCellPropertiesSectionContent($style)
-    {
+    private function getTableCellPropertiesSectionContent($style) {
         $content = '';
 
         if ($style->shouldWrapText()) {
@@ -298,8 +339,7 @@ EOD;
      *
      * @return string
      */
-    private function getWrapTextXMLContent()
-    {
+    private function getWrapTextXMLContent() {
         return '<style:table-cell-properties fo:wrap-option="wrap" style:vertical-align="automatic"/>';
     }
 
@@ -309,8 +349,7 @@ EOD;
      * @param \Box\Spout\Common\Entity\Style\Style $style
      * @return string
      */
-    private function getBorderXMLContent($style)
-    {
+    private function getBorderXMLContent($style) {
         $borderProperty = '<style:table-cell-properties %s />';
 
         $borders = array_map(function (BorderPart $borderPart) {
@@ -326,11 +365,11 @@ EOD;
      * @param \Box\Spout\Common\Entity\Style\Style $style
      * @return string
      */
-    private function getBackgroundColorXMLContent($style)
-    {
+    private function getBackgroundColorXMLContent($style) {
         return sprintf(
-            '<style:table-cell-properties fo:background-color="#%s"/>',
-            $style->getBackgroundColor()
+                '<style:table-cell-properties fo:background-color="#%s"/>',
+                $style->getBackgroundColor()
         );
     }
+
 }
