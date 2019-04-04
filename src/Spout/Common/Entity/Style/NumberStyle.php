@@ -28,13 +28,13 @@ class NumberStyle {
     /**
      * @var NumberStyle
      */
-    private $map = [];
+    private $map = null;
 
     /**
      * @var NumberStylePartInterface[]
      */
     private $parts = [];
-    
+
     /**
      * @var NumberFormatCondition[] 
      */
@@ -47,12 +47,15 @@ class NumberStyle {
     /**
      * Add a subdeclaration with a condition to a number style
      * 
-     * @param \Box\Spout\Common\Entity\Style\NumberStyle $declaration
+     * @param \Box\Spout\Common\Entity\Style\NumberStyle $style
      * @param \Box\Spout\Common\Entity\Style\NumberFormatCondition $condition
      * @return $this
      */
-    public function addChild(NumberStyle $declaration, NumberFormatCondition $condition) {
-        $this->map[] = ['condition' => $condition, 'declaration' => $declaration];
+    public function addChild(NumberStyle $style, NumberFormatCondition $condition) {
+        if ($this->map === null) {
+            $this->map = [];
+        }
+        $this->map[] = ['condition' => $condition, 'style' => $style];
 
         return $this;
     }
@@ -68,6 +71,7 @@ class NumberStyle {
             $conditions[] = new NumberFormatCondition(0, NumberFormatCondition::COMPARE_LOWERTHAN);
             $conditions[] = new NumberFormatCondition(0, NumberFormatCondition::COMPARE_GREATEREQUAL);
             $conditions[] = new NumberFormatCondition(0, NumberFormatCondition::COMPARE_EQUAL);
+            $conditions[] = new NumberFormatCondition(0, NumberFormatCondition::COMPARE_STRING);
 
             self::$defaultConditions = $conditions;
         }
@@ -102,8 +106,9 @@ class NumberStyle {
             $regExp = '/^(' . $expColor . ')?(' . $expCondition . ')?(' . $expFormat . ')$/i';
 
             if (preg_match($regExp, $token, $match)) {
+                var_export($match);
                 $color = $match[2];
-                if (isset($match[3])) {
+                if (isset($match[3]) && (strlen($match[3]) !== 0)) {
                     $condition = new NumberFormatCondition((float) $match[5], NumberFormatCondition::getComparatorType($match[4]));
                 } else {
                     if (!$usesCustomConditions) {
@@ -222,6 +227,15 @@ class NumberStyle {
      */
     public function getParts() {
         return $this->parts;
+    }
+
+    /**
+     * Get list of conditional mapped number styles
+     * 
+     * @return NumberStyle[]
+     */
+    public function getConditionalStyles() {
+        return $this->map;
     }
 
 }
