@@ -24,8 +24,18 @@ use Exception;
  * @version 1.0, 13.03.2019
  */
 class NumberStylePartString implements NumberStylePartInterface {
+    /**
+     * @var string
+     */
     private $text;
     
+    /**
+     * Set the text value of the part
+     * 
+     * @param string $text
+     * @return $this
+     * @throws Exception
+     */
     public function setText($text) {
         if(!is_string($text)) {
             throw new Exception('Text must be a string');
@@ -33,6 +43,15 @@ class NumberStylePartString implements NumberStylePartInterface {
         $this->text=$text;
         
         return $this;
+    }
+    
+    /**
+     * Get the text value of the part
+     * 
+     * @return string
+     */
+    public function getText() {
+        return $this->text;
     }
 
     /**
