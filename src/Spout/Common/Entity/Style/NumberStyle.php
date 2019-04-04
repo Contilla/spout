@@ -76,7 +76,7 @@ class NumberStyle {
         if (self::$defaultConditions === null) {
             $conditions = [];
             $conditions[] = new NumberFormatCondition(0, NumberFormatCondition::COMPARE_LOWERTHAN);
-            $conditions[] = new NumberFormatCondition(0, NumberFormatCondition::COMPARE_GREATEREQUAL);
+            $conditions[] = new NumberFormatCondition(0, NumberFormatCondition::COMPARE_GREATERTHAN);
             $conditions[] = new NumberFormatCondition(0, NumberFormatCondition::COMPARE_EQUAL);
             $conditions[] = new NumberFormatCondition(0, NumberFormatCondition::COMPARE_STRING);
 
