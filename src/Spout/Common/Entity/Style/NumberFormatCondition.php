@@ -12,6 +12,9 @@
 
 namespace Box\Spout\Common\Entity\Style;
 
+use Box\Spout\Common\Exception\NumberFormatException;
+use Exception;
+
 /**
  * NumberFormatCondition
  * 
@@ -51,15 +54,20 @@ class NumberFormatCondition {
      */
     const COMPARE_GREATERTHAN = 4;
 
-    private static $availableComparators = [self::COMPARE_EQUAL, self::COMPARE_GREATEREQUAL, self::COMPARE_GREATERTHAN, self::COMPARE_LOWEREQUAL, self::COMPARE_LOWERTHAN];
+    /**
+     * Compared value is a string
+     */
+    const COMPARE_STRING = 99;
+
+    private static $availableComparators = [self::COMPARE_EQUAL, self::COMPARE_GREATEREQUAL, self::COMPARE_GREATERTHAN, self::COMPARE_LOWEREQUAL, self::COMPARE_LOWERTHAN, self::COMPARE_STRING];
 
     public function __construct($value, $comparator) {
         if (!is_numeric($value)) {
-            throw new \Exception('Value must be numeric');
+            throw new NumberFormatException('Value must be numeric');
         }
 
-        if (!in_array($comparator, self::$availableComparators)) {
-            throw new \Exception('Comparator must be one of the COMPARE_XX class constants');
+        if (($comparator === null) || !in_array($comparator, self::$availableComparators)) {
+            throw new NumberFormatException('Comparator must be one of the COMPARE_XX class constants');
         }
 
         $this->value = $value;
@@ -107,7 +115,7 @@ class NumberFormatCondition {
                 $type = null;
                 break;
             default:
-                throw new \Exception(sprintf('Unknown comparator string: "%s"', $test));
+                throw new NumberFormatException(sprintf('Unknown comparator string: "%s"', $test));
                 break;
         }
 
