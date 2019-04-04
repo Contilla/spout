@@ -44,12 +44,24 @@ class NumberStyle {
         
     }
 
+    /**
+     * Add a subdeclaration with a condition to a number style
+     * 
+     * @param \Box\Spout\Common\Entity\Style\NumberStyle $declaration
+     * @param \Box\Spout\Common\Entity\Style\NumberFormatCondition $condition
+     * @return $this
+     */
     public function addChild(NumberStyle $declaration, NumberFormatCondition $condition) {
         $this->map[] = ['condition' => $condition, 'declaration' => $declaration];
 
         return $this;
     }
 
+    /**
+     * Get default conditions
+     * 
+     * @return NumberFormatCondition[]
+     */
     protected static function getDefaultConditions() {
         if (self::$defaultConditions === null) {
             $conditions = [];
@@ -63,6 +75,12 @@ class NumberStyle {
         return self::$defaultConditions;
     }
 
+    /**
+     * Build a number style out of a format definition
+     * 
+     * @param type $formatCode
+     * @return $this
+     */
     public static function build($formatCode) {
         $class = self::class;
         $declaration = new $class;
