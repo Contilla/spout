@@ -31,6 +31,13 @@ class NumberStyle {
     private $map = null;
 
     /**
+     * Color code for the format
+     * 
+     * @var string
+     */
+    private $color = null;
+
+    /**
      * @var NumberStylePartInterface[]
      */
     private $parts = [];
@@ -236,6 +243,31 @@ class NumberStyle {
      */
     public function getConditionalStyles() {
         return $this->map;
+    }
+
+    /**
+     * Set the color for the format
+     * 
+     * @param string $color
+     * @return $this
+     * @throws NumberFormatException
+     */
+    public function setColor($color) {
+        if (!is_string($color) || empty($color)) {
+            throw new NumberFormatException('Color can\'t be empty');
+        }
+
+        $this->color = $color;
+        return $this;
+    }
+
+    /**
+     * Get the color for the format
+     * 
+     * @return type
+     */
+    public function getColor() {
+        return $this->color;
     }
 
 }
