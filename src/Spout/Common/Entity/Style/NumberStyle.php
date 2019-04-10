@@ -99,7 +99,7 @@ class NumberStyle {
         // regexp to get color definition for a format
         $expColor = '\[(black|white|red|green|blue|yellow|magenta|cyan|color[0-9]{1,2})\]';
         // regexp to get conditional definition for a format
-        $expCondition = '\[([><=]=?)([0-9]+(\.[0-9]+)?)\]';
+        $expCondition = '\[([><=]=?)(-?[0-9]+(\.[0-9]+)?)\]';
 
 
         $usesCustomConditions = preg_match('/' . $expCondition . '/', $formatCode);
@@ -113,7 +113,6 @@ class NumberStyle {
             $regExp = '/^(' . $expColor . ')?(' . $expCondition . ')?(' . $expFormat . ')$/i';
 
             if (preg_match($regExp, $token, $match)) {
-                var_export($match);
                 $color = $match[2];
                 if (isset($match[3]) && (strlen($match[3]) !== 0)) {
                     $condition = new NumberFormatCondition((float) $match[5], NumberFormatCondition::getComparatorType($match[4]));
@@ -127,7 +126,7 @@ class NumberStyle {
                 $format = $match[7]; // includes all but the condition and the color
                 $formatParts = self::parseFormat($format);
 
-                if ($numTokens !== 1) {
+                if (($numTokens !== 1) && ($condition !== null)) {
                     $mappedDeclaration = new NumberStyle();
                     if (strlen($color) !== 0) {
                         $mappedDeclaration->setColor($color);
