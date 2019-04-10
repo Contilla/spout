@@ -263,7 +263,7 @@ class NumberStyle {
     /**
      * Get the color for the format
      * 
-     * @return type
+     * @return string|null
      */
     public function getColor() {
         return $this->color;
