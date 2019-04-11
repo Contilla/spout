@@ -155,7 +155,7 @@ class StyleBuilder
      * @return $this
      */
     public function setNumberFormat(\Box\Spout\Common\Entity\Style\NumberFormat $numberFormat) {
-        $this->style->setNumberFormat($numberFormat);
+        $this->style->setNumberStyle($numberFormat);
         
         return $this;
     }

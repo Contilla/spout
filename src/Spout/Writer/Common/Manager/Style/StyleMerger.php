@@ -65,8 +65,8 @@ class StyleMerger
      */
     private function mergeNumberFormatProperties(Style $styleToUpdate, Style $style, Style $baseStyle)
     {
-        if (!$style->hasSetNumberFormat() && $baseStyle->shouldApplyNumberFormat()) {
-            $styleToUpdate->setNumberFormat($baseStyle->getNumberFormat());
+        if (!$style->hasSetNumberStyle() && $baseStyle->shouldApplyNumberStyle()) {
+            $styleToUpdate->setNumberStyle($baseStyle->getNumberStyle());
         }
     }
 

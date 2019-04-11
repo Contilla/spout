@@ -74,12 +74,12 @@ class Style
     /**
      * @var NumberFormat format for numeric values of the cell
      */
-    private $numberFormat = null;
+    private $numberStyle = null;
 
     /**
      * @var boolean
      */
-    private $hasSetNumberFormat = false;
+    private $hasSetNumberStyle = false;
 
     /**
      * @var boolean
@@ -401,13 +401,13 @@ class Style
     /**
      * Set the number format for the style
      * 
-     * @param \Box\Spout\Common\Entity\Style\NumberFormat $numberFormat
+     * @param \Box\Spout\Common\Entity\Style\NumberStyle $numberstyle
      * @return $this
      */
-    public function setNumberFormat(NumberFormat $numberFormat) {
-        $this->numberFormat = $numberFormat;
-        $this->hasSetNumberFormat = true;
-        $this->shouldApplyNumberFormat = $numberFormat->getBuildInFormatCode() !== NumberFormat::FORMAT_GENERAL;
+    public function setNumberStyle(NumberStyle $numberstyle) {
+        $this->numberStyle = $numberstyle;
+        $this->hasSetNumberStyle = true;
+        $this->shouldApplyNumberFormat = $numberstyle->getBuildInFormatCode() !== NumberFormat::FORMAT_GENERAL;
 
         return $this;
     }
@@ -415,10 +415,10 @@ class Style
     /**
      * Get the number format for the style
      * 
-     * @return NumberFormat
+     * @return NumberStyle
      */
-    public function getNumberFormat() {
-        return $this->numberFormat;
+    public function getNumberStyle() {
+        return $this->numberStyle;
     }
 
     /**
@@ -426,7 +426,7 @@ class Style
      * 
      * @return bool
      */
-    public function shouldApplyNumberFormat() {
+    public function shouldApplyNumberStyle() {
         return $this->shouldApplyNumberFormat;
     }
 
@@ -435,8 +435,8 @@ class Style
      * 
      * @return bool
      */
-    public function hasSetNumberFormat() {
-        return $this->hasSetNumberFormat;
+    public function hasSetNumberStyle() {
+        return $this->hasSetNumberStyle;
     }
 
 }
