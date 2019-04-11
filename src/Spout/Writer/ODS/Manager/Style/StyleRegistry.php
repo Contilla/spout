@@ -54,8 +54,8 @@ class StyleRegistry extends \Box\Spout\Writer\Common\Manager\Style\StyleRegistry
     private function registerNumberFormat(Style $style) {
         $styleId = $style->getId();
 
-        if ($style->shouldApplyNumberFormat()) {
-            $numberFormat = $style->getNumberFormat();
+        if ($style->shouldApplyNumberStyle()) {
+            $numberFormat = $style->getNumberStyle();
             $serializedNumberFormat = serialize($numberFormat);
 
             $isNumberFormatAlreadyRegistered = isset($this->registeredNumberFormats[$serializedNumberFormat]);
