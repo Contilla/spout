@@ -2,16 +2,20 @@
 
 namespace Box\Spout\Writer\XLSX\Manager\Style;
 
-use Box\Spout\Common\Entity\Style\Color;
+use Box\Spout\Common\Entity\Style\NumberFormatCondition;
+use Box\Spout\Common\Entity\Style\NumberStyle;
+use Box\Spout\Common\Entity\Style\NumberStylePartNumber;
+use Box\Spout\Common\Entity\Style\NumberStylePartString;
 use Box\Spout\Common\Entity\Style\Style;
 use Box\Spout\Writer\XLSX\Helper\BorderHelper;
+use Box\Spout\Writer\XLSX\Manager\Style\StyleRegistry;
 
 /**
  * Class StyleManager
  * Manages styles to be applied to a cell
  */
-class StyleManager extends \Box\Spout\Writer\Common\Manager\Style\StyleManager
-{
+class StyleManager extends \Box\Spout\Writer\Common\Manager\Style\StyleManager {
+
     /** @var StyleRegistry */
     protected $styleRegistry;
 
@@ -79,7 +83,7 @@ EOD;
             $content .= '<font>';
 
             $content .= '<sz val="' . $style->getFontSize() . '"/>';
-            $content .= '<color rgb="' . Color::toARGB($style->getFontColor()) . '"/>';
+            $content .= '<color rgb="' . \Box\Spout\Common\Entity\Style\Color::toARGB($style->getFontColor()) . '"/>';
             $content .= '<name val="' . $style->getFontName() . '"/>';
 
             if ($style->isFontBold()) {
@@ -126,8 +130,8 @@ EOD;
 
             $backgroundColor = $style->getBackgroundColor();
             $content .= sprintf(
-                '<fill><patternFill patternType="solid"><fgColor rgb="%s"/></patternFill></fill>',
-                $backgroundColor
+                    '<fill><patternFill patternType="solid"><fgColor rgb="%s"/></patternFill></fill>',
+                    $backgroundColor
             );
         }
 
@@ -154,7 +158,7 @@ EOD;
         $content .= '<border><left/><right/><top/><bottom/></border>';
 
         foreach ($registeredBorders as $styleId) {
-            /** @var \Box\Spout\Common\Entity\Style\Style $style */
+            /** @var Style $style */
             $style = $this->styleRegistry->getStyleFromStyleId($styleId);
             $border = $style->getBorder();
             $content .= '<border>';
@@ -177,32 +181,154 @@ EOD;
 
         return $content;
     }
-    
+
+    private static $comparatorMapping = [
+        NumberFormatCondition::COMPARE_LOWERTHAN => '<',
+        NumberFormatCondition::COMPARE_LOWEREQUAL => '<=',
+        NumberFormatCondition::COMPARE_EQUAL => '=',
+        NumberFormatCondition::COMPARE_GREATEREQUAL => '>=',
+        NumberFormatCondition::COMPARE_GREATERTHAN => '>',
+        NumberFormatCondition::COMPARE_STRING => null,
+    ];
+
+    /**
+     * Reconstructing of a format definition with optional condition
+     * 
+     * @param NumberStyle $numberStyle
+     * @param NumberFormatCondition $condition
+     */
+    private function refactorNumberFormatPart(NumberStyle $numberStyle, $condition = null)
+    {
+        $formatParts = [];
+
+        // coloring of the format
+        $color = $numberStyle->getColor();
+        if ($color !== null) {
+            $formatParts[] = sprintf('[%s]', $color);
+        }
+
+        // condition for the format
+        if ($condition instanceof NumberFormatCondition) {
+            $comparator = self::$comparatorMapping[$condition->getComparator()];
+            if ($comparator !== null) {
+                $formatParts[] = sprintf('[%s%s]', $comparator, $condition->getValue());
+            }
+        }
+
+        // the format string itself
+        $format = '';
+        $parts = $numberStyle->getParts();
+        foreach ($parts as $part) {
+            if ($part instanceof NumberStylePartNumber) {
+                $grouping = $part->getGrouping(); // thousands grouping enabled?
+                $groupingOpened = false;
+
+                $requiredIntegers = $part->getMinIntegerPlaces();
+                if ($requiredIntegers !== null) {
+                    for ($i = 0; $i < $requiredIntegers; $i++) {
+                        $groupingOpened = false;
+                        $format = '0' . $format;
+                        if ($grouping && ($i + 1 % 3 === 0)) {
+                            $format .= ',' . $format;
+                            $groupingOpened = true;
+                        }
+                    }
+                } else {
+                    $requiredIntegers = 0;
+                }
+
+                $maxIntegers = $part->getMaxIntegerPlaces();
+                if (($maxIntegers === null) || ($maxIntegers < $requiredIntegers)) {
+                    $maxIntegers = $requiredIntegers;
+                }
+
+                if ($grouping) {
+                    $maxIntegers = max(4, $maxIntegers);
+                }
+
+                for ($i = $requiredIntegers; $i < $maxIntegers; $i++) {
+                    $groupingOpened = false;
+                    $format = '#' . $format;
+                    if ($grouping && ($i + 1 % 3 === 0)) {
+                        $format .= ',' . $format;
+                        $groupingOpened = true;
+                    }
+                }
+
+                if ($groupingOpened) {
+                    $format = '#' . $format;
+                }
+
+                $requiredDecimals = $part->getMinDecimalPlaces();
+                $maxDecimals = $part->getMaxDecimalPlaces();
+                if ($maxDecimals === null) {
+                    $maxDecimals = $requiredDecimals;
+                }
+                if (($requiredDecimals !== null) || ($maxDecimals !== null)) {
+                    $format .= '.';
+                    if ($requiredDecimals !== null) {
+                        for ($i = 0; $i < $requiredDecimals; $i++) {
+                            $format .= '0';
+                        }
+                    } else {
+                        $requiredDecimals = 0;
+                    }
+                    if ($maxDecimals !== null) {
+                        for ($i = 0; $i < $requiredDecimals - $requiredDecimals; $i++) {
+                            $format .= '#';
+                        }
+                    }
+                }
+            } elseif ($part instanceof NumberStylePartString) {
+                $format .= $part->getText();
+            }
+        }
+        if (strlen($format) !== 0) {
+            $formatParts[] = $format;
+        }
+
+        implode('', $formatParts);
+    }
+
+    private function refactorNumberFormat(NumberStyle $numberStyle)
+    {
+        $parts = [];
+        $conditionalStyles = $numberStyle->getConditionalStyles();
+        foreach ($conditionalStyles as $conditionalStyles) {
+            $parts[] = $this->refactorNumberFormatPart($conditionalStyle['style'], $conditionalStyle['condition']);
+        }
+
+        $parts[] = $this->refactorNumberFormatPart($numberStyle);
+
+        return implode(';', $parts);
+    }
+
     /**
      * Returns the content of the "<numFmts>" section.
      *
      * @return string
      */
-    protected function getNumberFormatsSectionContent() {
-        $registeredFormats = $this->styleRegistry->getRegisteredNumberFormats();
+    protected function getNumberFormatsSectionContent()
+    {
+        $registeredStyles = $this->styleRegistry->getRegisteredNumberStyles();
 
         // There is one default border with index 0
         //$formatsCount = count($registeredFormats) + 1;
-        $formatsCount = count($registeredFormats);
+        $styleCount = count($registeredStyles);
 
         $content = '';
-        if ($formatsCount !== 0) {
+        if ($styleCount !== 0) {
 
-            $content .= '<numFmts count="' . $formatsCount . '">';
+            $content .= '<numFmts count="' . $styleCount . '">';
 
             // Default border starting at index 0
             //$content .= '<numFmt><left/><right/><top/><bottom/></border>';
 
-            foreach ($registeredFormats as $styleId) {
-                /** @var \Box\Spout\Common\Entity\Style\Style $style */
+            foreach ($registeredStyles as $styleId) {
+                /** @var Style $style */
                 $style = $this->styleRegistry->getStyleFromStyleId($styleId);
-                $numberFormat = $style->getNumberFormat();
-                $content .= sprintf('<numFmt numFmtId="%s" formatCode="%s"/>', $this->getNumberFormatIdForStyleId($styleId), htmlentities($numberFormat->getFormatCode()));
+                $numberStyle = $style->getNumberStyle();
+                $content .= sprintf('<numFmt numFmtId="%s" formatCode="%s"/>', $this->getNumberStyleIdForStyleId($styleId), htmlentities($this->refactorNumberFormat($numberStyle)));
             }
 
             $content .= '</numFmts>';
@@ -240,7 +366,7 @@ EOD;
             $styleId = $style->getId();
             $fillId = $this->getFillIdForStyleId($styleId);
             $borderId = $this->getBorderIdForStyleId($styleId);
-            $numberFormatId = $this->getNumberFormatIdForStyleId($styleId);
+            $numberFormatId = $this->getNumberStyleIdForStyleId($styleId);
 
             $content .= '<xf numFmtId="' . $numberFormatId . '" fontId="' . $styleId . '" fillId="' . $fillId . '" borderId="' . $borderId . '" xfId="0"';
 
@@ -295,7 +421,7 @@ EOD;
 
         return $isDefaultStyle ? 0 : ($this->styleRegistry->getBorderIdForStyleId($styleId) ?: 0);
     }
-    
+
     /**
      * Returns the number format ID associated to the given style ID.
      * For the default style, we don't add a number format.
@@ -303,14 +429,14 @@ EOD;
      * @param int $styleId
      * @return int
      */
-    private function getNumberFormatIdForStyleId($styleId) {
+    private function getNumberStyleIdForStyleId($styleId)
+    {
         // For the default style (ID = 0), we don't want to override the border.
         // Otherwise all cells of the spreadsheet will have a border.
         $isDefaultStyle = ($styleId === 0);
 
-        return $isDefaultStyle ? 0 : ($this->styleRegistry->getNumberFormatIdForStyleId($styleId) ?: 0);
+        return $isDefaultStyle ? 0 : ($this->styleRegistry->getNumberStyleIdForStyleId($styleId) ?: 0);
     }
-
 
     /**
      * Returns the content of the "<cellStyles>" section.
@@ -325,4 +451,5 @@ EOD;
 </cellStyles>
 EOD;
     }
+
 }
