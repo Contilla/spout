@@ -41,7 +41,7 @@ class StyleRegistry extends \Box\Spout\Writer\Common\Manager\Style\StyleRegistry
     /**
      * @var array
      */
-    protected $registeredNumberFormats = [];
+    protected $registeredNumberStyles = [];
     
     /**
      * @var array [STYLE_ID] => [NUMBERFORMAT_ID] maps a style to a numberformat declaration
@@ -59,7 +59,7 @@ class StyleRegistry extends \Box\Spout\Writer\Common\Manager\Style\StyleRegistry
         $registeredStyle = parent::registerStyle($style);
         $this->registerFill($registeredStyle);
         $this->registerBorder($registeredStyle);
-        $this->registerNumberFormat($registeredStyle);
+        $this->registerNumberStyle($registeredStyle);
 
         return $registeredStyle;
     }
@@ -152,22 +152,22 @@ class StyleRegistry extends \Box\Spout\Writer\Common\Manager\Style\StyleRegistry
      *
      * @param Style $style
      */
-    private function registerNumberFormat(Style $style) {
+    private function registerNumberStyle(Style $style) {
         $styleId = $style->getId();
 
-        if ($style->shouldApplyNumberFormat()) {
-            $numberFormat = $style->getNumberFormat();
+        if ($style->shouldApplyNumberStyle()) {
+            $numberFormat = $style->getNumberStyle();
             $serializedNumberFormat = serialize($numberFormat);
 
-            $isNumberFormatAlreadyRegistered = isset($this->registeredNumberFormats[$serializedNumberFormat]);
+            $isNumberFormatAlreadyRegistered = isset($this->registeredNumberStyles[$serializedNumberFormat]);
 
             if ($isNumberFormatAlreadyRegistered) {
-                $registeredStyleId = $this->registeredNumberFormats[$serializedNumberFormat];
+                $registeredStyleId = $this->registeredNumberStyles[$serializedNumberFormat];
                 $registeredNumberFormatId = $this->styleIdToNumberFormatMappingTable[$registeredStyleId];
                 $this->styleIdToNumberFormatMappingTable[$styleId] = $registeredNumberFormatId;
             } else {
-                $this->registeredNumberFormats[$serializedNumberFormat] = $styleId;
-                $this->styleIdToNumberFormatMappingTable[$styleId] = count($this->registeredNumberFormats);
+                $this->registeredNumberStyles[$serializedNumberFormat] = $styleId;
+                $this->styleIdToNumberFormatMappingTable[$styleId] = count($this->registeredNumberStyles);
             }
         } else {
             // If no number format should be applied - the mapping is the default format: 0
@@ -179,7 +179,7 @@ class StyleRegistry extends \Box\Spout\Writer\Common\Manager\Style\StyleRegistry
      * @param int $styleId
      * @return int|null NumberFormat ID associated to the given style ID
      */
-    public function getNumberFormatIdForStyleId($styleId) {
+    public function getNumberStyleIdForStyleId($styleId) {
         return (isset($this->styleIdToNumberFormatMappingTable[$styleId])) ? $this->styleIdToNumberFormatMappingTable[$styleId] : null;
     }
 
@@ -202,8 +202,8 @@ class StyleRegistry extends \Box\Spout\Writer\Common\Manager\Style\StyleRegistry
     /**
      * @return array
      */
-    public function getRegisteredNumberFormats()
+    public function getRegisteredNumberStyles()
     {
-        return $this->registeredNumberFormats;
+        return $this->registeredNumberStyles;
     }
 }
