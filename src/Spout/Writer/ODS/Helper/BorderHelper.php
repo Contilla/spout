@@ -19,17 +19,17 @@ use Box\Spout\Common\Entity\Style\BorderPart;
  * style:diagonal-tl-br="none" fo:border-left="none" fo:border-right="none"
  * style:rotation-align="none" fo:border-top="none"/>
  */
-class BorderHelper
-{
+class BorderHelper {
+
     /**
      * Width mappings
      *
      * @var array
      */
     protected static $widthMap = [
-        Border::WIDTH_THIN   => '0.75pt',
+        Border::WIDTH_THIN => '0.75pt',
         Border::WIDTH_MEDIUM => '1.75pt',
-        Border::WIDTH_THICK  => '2.5pt',
+        Border::WIDTH_THICK => '2.5pt',
     ];
 
     /**
@@ -38,7 +38,7 @@ class BorderHelper
      * @var array
      */
     protected static $styleMap = [
-        Border::STYLE_SOLID  => 'solid',
+        Border::STYLE_SOLID => 'solid',
         Border::STYLE_DASHED => 'dashed',
         Border::STYLE_DOTTED => 'dotted',
         Border::STYLE_DOUBLE => 'double',
@@ -65,4 +65,31 @@ class BorderHelper
 
         return $borderPartDefinition;
     }
+
+    /**
+     * Enhance node with border attributes
+     * 
+     * @param \SimpleXMLElement $node
+     * @param type $border
+     */
+    public static function setBorderAttributes(\SimpleXMLElement $node, Border $border)
+    {
+
+        foreach ($border->getParts() as $borderPart) {
+
+            $definitionAttribute = 'xmlns:fo:border-%s';
+
+            if ($borderPart->getStyle() === \Box\Spout\Common\Entity\Style\Border::STYLE_NONE) {
+                $node->addAttribute(sprintf($definitionAttribute, $borderPart->getName()), 'none');
+            } else {
+                $attributes = [
+                    self::$widthMap[$borderPart->getWidth()],
+                    self::$styleMap[$borderPart->getStyle()],
+                    '#' . $borderPart->getColor(),
+                ];
+                $node->addAttribute(sprintf($definitionAttribute, $borderPart->getName()), implode(' ', $attributes));
+            }
+        }
+    }
+
 }
