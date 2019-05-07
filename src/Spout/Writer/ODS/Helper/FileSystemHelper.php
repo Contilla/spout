@@ -196,14 +196,56 @@ EOD;
      */
     public function createContentFile($worksheetManager, $styleManager, $worksheets)
     {
-        $contentXmlFileContents = <<<'EOD'
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<office:document-content office:version="1.2" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:calcext="urn:org:documentfoundation:names:experimental:calc:xmlns:calcext:1.0" xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:msoxl="http://schemas.microsoft.com/office/excel/formula" xmlns:number="urn:oasis:names:tc:opendocument:xmlns:datastyle:1.0" xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0" xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:xlink="http://www.w3.org/1999/xlink">
-EOD;
+        $document = @new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><office:document-content office:version="1.2" />');
 
-        $contentXmlFileContents .= $styleManager->getContentXmlFontFaceSectionContent();
-        $contentXmlFileContents .= $styleManager->getContentXmlAutomaticStylesSectionContent($worksheets);
+        // declare namespaces the complicated way to avoid SimpleXMLElements behaviour of complaining about undeclared namespaces in attributes, ...
+        // https://stackoverflow.com/a/9391673
+        $namespaces = [
+            'dc' => 'http://purl.org/dc/elements/1.1/',
+            'draw' => 'http://purl.org/dc/elements/1.1/',
+            'fo' => 'urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0',
+            'msoxl' => 'http://schemas.microsoft.com/office/excel/formula',
+            'number' => 'urn:oasis:names:tc:opendocument:xmlns:datastyle:1.0',
+            'office' => 'urn:oasis:names:tc:opendocument:xmlns:office:1.0',
+            'style' => 'urn:oasis:names:tc:opendocument:xmlns:style:1.0',
+            'svg' => 'urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0',
+            'table' => 'urn:oasis:names:tc:opendocument:xmlns:table:1.0',
+            'text' => 'urn:oasis:names:tc:opendocument:xmlns:text:1.0',
+            'xlink' => 'http://www.w3.org/1999/xlink',
+            'meta' => 'urn:oasis:names:tc:opendocument:xmlns:meta:1.0',
+            'presentation' => 'urn:oasis:names:tc:opendocument:xmlns:presentation:1.0',
+            'chart' => 'urn:oasis:names:tc:opendocument:xmlns:chart:1.0',
+            'dr3d' => 'urn:oasis:names:tc:opendocument:xmlns:dr3d:1.0',
+            'math' => 'http://www.w3.org/1998/Math/MathML',
+            'form' => 'urn:oasis:names:tc:opendocument:xmlns:form:1.0',
+            'script' => 'urn:oasis:names:tc:opendocument:xmlns:script:1.0',
+            'ooo' => 'http://openoffice.org/2004/office',
+            'ooow' => 'http://openoffice.org/2004/writer',
+            'oooc' => 'http://openoffice.org/2004/calc',
+            'dom' => 'http://www.w3.org/2001/xml-events',
+            'rpt' => 'http://openoffice.org/2005/report',
+            'of' => 'urn:oasis:names:tc:opendocument:xmlns:of:1.2',
+            'xhtml' => 'http://www.w3.org/1999/xhtml',
+            'grddl' => 'http://www.w3.org/2003/g/data-view#',
+            'tableooo' => 'http://openoffice.org/2009/table',
+            'drawooo' => 'http://openoffice.org/2010/draw',
+            'calcext' => 'urn:org:documentfoundation:names:experimental:calc:xmlns:calcext:1.0',
+            'loext' => 'urn:org:documentfoundation:names:experimental:office:xmlns:loext:1.0',
+            'field' => 'urn:openoffice:names:experimental:ooo-ms-interop:xmlns:field:1.0',
+            'css3t' => 'http://www.w3.org/TR/css3-text/',
+        ];
 
+        foreach ($namespaces as $ns => $uri) {
+            $document->addAttribute(sprintf('xmlns:xmlns:%s', $ns), $uri);
+        }
+
+
+        $fontfaceSection = $styleManager->getContentXmlFontFaceSectionContent($document);
+        $styleManager->getContentXmlAutomaticStylesSectionContent($document, $worksheets);
+
+        $contentXmlFileContents = $document->asXML();
+        $contentXmlFileContents = substr($contentXmlFileContents, 0, strrpos($contentXmlFileContents, '</'));
+        
         $contentXmlFileContents .= '<office:body><office:spreadsheet>';
 
         $this->createFileWithContents($this->rootFolder, self::CONTENT_XML_FILE_NAME, $contentXmlFileContents);
